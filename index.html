@@ -1,0 +1,941 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AutomationBot Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <div id="app" class="flex-grow flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        <div class="flex items-center space-x-3">
+          <img
+            src="https://files.catbox.moe/k6l4c9.jpg"
+            alt="AutomationBot logo, stylized letters AB in blue and white"
+            class="h-10 w-10 rounded"
+          />
+          <h1 class="text-xl font-semibold text-blue-700">AutomationBot</h1>
+        </div>
+        <nav class="hidden md:flex space-x-6 text-gray-700 font-medium">
+          <button
+            @click="goTo('dashboard')"
+            :class="currentPage === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-blue-600'"
+            class="pb-1"
+          >
+            Dashboard
+          </button>
+          <button
+            @click="goTo('products')"
+            :class="currentPage === 'products' ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-blue-600'"
+            class="pb-1"
+          >
+            Produk
+          </button>
+          <button
+            @click="goTo('orderStatus')"
+            :class="currentPage === 'orderStatus' ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-blue-600'"
+            class="pb-1"
+          >
+            Order Status
+          </button>
+        </nav>
+        <button
+          @click="toggleMobileMenu"
+          class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none"
+          aria-label="Toggle menu"
+        >
+          <i class="fas fa-bars fa-lg"></i>
+        </button>
+      </div>
+      <div
+        v-if="mobileMenuOpen"
+        class="md:hidden bg-white border-t border-gray-200"
+      >
+        <nav class="flex flex-col space-y-1 px-4 py-2 text-gray-700 font-medium">
+          <button
+            @click="goTo('dashboard'); toggleMobileMenu()"
+            :class="currentPage === 'dashboard' ? 'text-blue-600 font-semibold' : 'hover:text-blue-600'"
+            class="text-left"
+          >
+            Dashboard
+          </button>
+          <button
+            @click="goTo('products'); toggleMobileMenu()"
+            :class="currentPage === 'products' ? 'text-blue-600 font-semibold' : 'hover:text-blue-600'"
+            class="text-left"
+          >
+            Produk
+          </button>
+          <button
+            @click="goTo('orderStatus'); toggleMobileMenu()"
+            :class="currentPage === 'orderStatus' ? 'text-blue-600 font-semibold' : 'hover:text-blue-600'"
+            class="text-left"
+          >
+            Order Status
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Dashboard Page -->
+      <section v-if="currentPage === 'dashboard'">
+        <!-- Slider -->
+        <div class="relative w-full max-w-5xl mx-auto">
+          <div class="overflow-hidden rounded-lg shadow-lg">
+            <div
+              class="flex transition-transform duration-500 ease-in-out"
+              :style="{ transform: `translateX(-${sliderIndex * 100}%)` }"
+            >
+              <img
+                v-for="(slide, index) in slides"
+                :key="index"
+                :src="slide.url"
+                :alt="slide.alt"
+                class="w-full flex-shrink-0 object-cover h-48 sm:h-64 md:h-80"
+              />
+            </div>
+          </div>
+          <div class="flex justify-center mt-3 space-x-2">
+            <button
+              v-for="(slide, index) in slides"
+              :key="'btn-' + index"
+              @click="sliderIndex = index"
+              :class="sliderIndex === index ? 'bg-blue-600' : 'bg-gray-300'"
+              class="w-3 h-3 rounded-full"
+              aria-label="'Go to slide ' + (index + 1)"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Produk Icons -->
+        <div class="mt-10 max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
+          <button
+            v-for="(prod, index) in productCategories"
+            :key="index"
+            @click="selectCategory(prod.key)"
+            class="flex flex-col items-center p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+            aria-label="'Pilih kategori produk ' + prod.name"
+          >
+            <img
+              :src="prod.icon"
+              :alt="prod.alt"
+              class="w-16 h-16 mb-3 object-contain"
+              loading="lazy"
+            />
+            <span class="font-semibold text-gray-800 text-lg">{{
+              prod.name
+            }}</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Produk Page -->
+      <section v-if="currentPage === 'products' && selectedCategory">
+        <button
+          @click="goTo('dashboard')"
+          class="mb-6 inline-flex items-center text-blue-600 hover:underline focus:outline-none"
+        >
+          <i class="fas fa-arrow-left mr-2"></i> Kembali ke Dashboard
+        </button>
+        <h2 class="text-2xl font-semibold mb-6 text-gray-900">
+          Produk: {{ productCategories.find(c => c.key === selectedCategory).name }}
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <article
+            v-for="product in filteredProducts"
+            :key="product.id"
+            class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col"
+          >
+            <img
+              :src="product.thumbnail"
+              :alt="product.alt"
+              class="w-full h-48 object-cover rounded-t-lg"
+              loading="lazy"
+            />
+            <div class="p-4 flex flex-col flex-grow">
+              <h3 class="text-lg font-semibold mb-2 text-gray-900">
+                {{ product.name }}
+              </h3>
+              <p class="text-gray-700 flex-grow">{{ product.description }}</p>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="text-blue-600 font-bold text-lg">${{ product.price.toFixed(2) }}</span>
+                <button
+                  @click="selectProduct(product)"
+                  class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none"
+                >
+                  Buy
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Buy Modal -->
+      <section
+        v-if="currentPage === 'buyProduct' && selectedProduct"
+        class="max-w-lg mx-auto bg-white rounded-lg shadow-lg p-6"
+      >
+        <button
+          @click="goTo('products')"
+          class="mb-6 inline-flex items-center text-blue-600 hover:underline focus:outline-none"
+        >
+          <i class="fas fa-arrow-left mr-2"></i> Kembali ke Produk
+        </button>
+        <h2 class="text-2xl font-semibold mb-4 text-gray-900">
+          Beli Produk: {{ selectedProduct.name }}
+        </h2>
+        <img
+          :src="selectedProduct.thumbnail"
+          :alt="selectedProduct.alt"
+          class="w-full h-64 object-cover rounded-lg mb-4"
+          loading="lazy"
+        />
+        <p class="mb-4 text-gray-700">{{ selectedProduct.description }}</p>
+        <p class="mb-6 text-xl font-bold text-blue-600">
+          Harga: ${{ selectedProduct.price.toFixed(2) }}
+        </p>
+        <form @submit.prevent="submitOrder" class="space-y-4">
+          <div>
+            <label for="buyerName" class="block text-gray-700 font-medium mb-1"
+              >Nama Anda</label
+            >
+            <input
+              id="buyerName"
+              v-model="buyerName"
+              type="text"
+              required
+              placeholder="Masukkan nama Anda"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label for="buyerEmail" class="block text-gray-700 font-medium mb-1"
+              >Email Anda</label
+            >
+            <input
+              id="buyerEmail"
+              v-model="buyerEmail"
+              type="email"
+              required
+              placeholder="Masukkan email Anda"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            :disabled="isPaying"
+            class="w-full bg-blue-600 text-white py-3 rounded font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ isPaying ? 'Redirecting to PayPal...' : 'Pay' }}
+          </button>
+        </form>
+      </section>
+
+      <!-- Order Status Page -->
+      <section v-if="currentPage === 'orderStatus'">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-900">Status Order Anda</h2>
+        <div v-if="order" class="max-w-lg mx-auto bg-white rounded-lg shadow p-6 space-y-4">
+          <p><span class="font-semibold">Order ID:</span> #{{ order.id }}</p>
+          <p><span class="font-semibold">Item:</span> {{ order.productName }}</p>
+          <p><span class="font-semibold">Price:</span> ${{ order.price.toFixed(2) }}</p>
+          <p>
+            <span class="font-semibold">Status:</span>
+            <span
+              :class="{
+                'text-yellow-600': order.status === 'pending',
+                'text-green-600': order.status === 'success',
+                'text-red-600': order.status === 'failed',
+              }"
+            >
+              {{ order.status }}
+            </span>
+          </p>
+          <div v-if="order.status === 'pending'">
+            <button
+              @click="payOrderAgain"
+              class="mt-4 w-full bg-blue-600 text-white py-3 rounded font-semibold hover:bg-blue-700 focus:outline-none"
+            >
+              Pay Now
+            </button>
+          </div>
+          <div v-if="order.status === 'success'" class="mt-4 p-4 bg-green-100 rounded text-green-800">
+            <p>Produk telah dikirim ke email Anda.</p>
+          </div>
+        </div>
+        <div v-else class="text-center text-gray-600">
+          <p>Belum ada order yang ditemukan. Silakan lakukan pembelian terlebih dahulu.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="bg-white border-t border-gray-200 py-4 text-center text-gray-600 text-sm">
+    © AutomationBot - 2025
+  </footer>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const currentPage = ref('dashboard');
+        const mobileMenuOpen = ref(false);
+
+        // Slider data
+        const slides = [
+          {
+            url: 'https://files.catbox.moe/xx0y35.jpg',
+            alt: 'Promo banner showing 50% discount on premium websites with colorful design and text',
+          },
+          {
+            url: 'https://files.catbox.moe/9bmpjq.jpg',
+            alt: 'Promo banner showing latest premium scripts with modern tech icons and text',
+          },
+          {
+            url: 'https://files.catbox.moe/xx0y35.jpg',
+            alt: 'Promo banner showing exclusive premium APK apps with smartphone and app icons',
+          },
+          {
+            url: 'https://files.catbox.moe/9bmpjq.jpg',
+            alt: 'Promo banner showing special discount for first purchase with gift box and confetti',
+          },
+          {
+            url: 'https://files.catbox.moe/xx0y35.jpg',
+            alt: 'Promo banner showing 24/7 support service with headset and clock icons',
+          },
+        ];
+        const sliderIndex = ref(0);
+        let sliderInterval = null;
+
+        function startSlider() {
+          sliderInterval = setInterval(() => {
+            sliderIndex.value = (sliderIndex.value + 1) % slides.length;
+          }, 4000);
+        }
+        function stopSlider() {
+          clearInterval(sliderInterval);
+        }
+
+        // Product categories
+        const productCategories = [
+          {
+            key: 'website',
+            name: 'Website',
+            icon: 'https://files.catbox.moe/u6m2or.jpg',
+            alt: 'Icon representing website products, a stylized globe with code brackets',
+          },
+          {
+            key: 'script',
+            name: 'Script',
+            icon: 'https://files.catbox.moe/qvtr3t.jpg',
+            alt: 'Icon representing script products, a terminal window with code lines',
+          },
+          {
+            key: 'apk',
+            name: 'APK Premium',
+            icon: 'https://placehold.co/64x64/png?text=APK+Icon',
+            alt: 'Icon representing APK premium products, a smartphone with app icons',
+          },
+          {
+            key: 'plugin',
+            name: 'Plugin',
+            icon: 'https://placehold.co/64x64/png?text=Plugin+Icon',
+            alt: 'Icon representing plugin products, a puzzle piece symbolizing extensions',
+          },
+          {
+            key: 'template',
+            name: 'Template',
+            icon: 'https://placehold.co/64x64/png?text=Template+Icon',
+            alt: 'Icon representing template products, a layered paper stack',
+          },
+          {
+            key: 'service',
+            name: 'Service',
+            icon: 'https://placehold.co/64x64/png?text=Service+Icon',
+            alt: 'Icon representing service products, a gear and wrench crossed',
+          },
+          {
+            key: 'ebook',
+            name: 'Ebook',
+            icon: 'https://placehold.co/64x64/png?text=Ebook+Icon',
+            alt: 'Icon representing ebook products, an open book with digital pages',
+          },
+          {
+            key: 'course',
+            name: 'Course',
+            icon: 'https://placehold.co/64x64/png?text=Course+Icon',
+            alt: 'Icon representing course products, a graduation cap and laptop',
+          },
+        ];
+
+        // Products data (sample 3 per category)
+        const products = [
+          // Website
+          {
+            id: 1,
+            category: 'website',
+            name: 'tes sini rus',
+            description:
+              'Website company profile modern, responsive, dan SEO friendly untuk bisnis Anda.',
+            price: 01,
+            thumbnail:
+              'https://placehold.co/400x250/png?text=Website+Company+Profile+Premium',
+            alt: 'Thumbnail of a modern company profile website with clean design and blue accents',
+          },
+          {
+            id: 2,
+            category: 'website',
+            name: 'Website Toko Online Lengkap',
+            description:
+              'Website toko online dengan fitur lengkap, pembayaran online, dan dashboard admin.',
+            price: 15,
+            thumbnail: 'https://placehold.co/400x250/png?text=Website+Toko+Online',
+            alt: 'Thumbnail of an e-commerce website with product listings and shopping cart',
+          },
+          {
+            id: 3,
+            category: 'website',
+            name: 'Landing Page Produk',
+            description:
+              'Landing page menarik untuk promosi produk dengan desain yang konversi tinggi.',
+            price: 8,
+            thumbnail: 'https://placehold.co/400x250/png?text=Landing+Page+Produk',
+            alt: 'Thumbnail of a product landing page with call to action and product images',
+          },
+          // Script
+          {
+            id: 4,
+            category: 'script',
+            name: 'Script Otomatisasi Instagram',
+            description:
+              'Script premium untuk otomatisasi like, follow, dan unfollow di Instagram.',
+            price: 12,
+            thumbnail:
+              'https://placehold.co/400x250/png?text=Script+Otomatisasi+Instagram',
+            alt: 'Thumbnail showing code editor with Instagram automation script',
+          },
+          {
+            id: 5,
+            category: 'script',
+            name: 'Script Bot Telegram',
+            description:
+              'Script bot Telegram dengan fitur custom commands dan auto reply.',
+            price: 10,
+            thumbnail: 'https://placehold.co/400x250/png?text=Script+Bot+Telegram',
+            alt: 'Thumbnail showing Telegram bot interface and code snippets',
+          },
+          {
+            id: 6,
+            category: 'script',
+            name: 'Script Scraper Data Web',
+            description:
+              'Script untuk scraping data website secara otomatis dan terjadwal.',
+            price: 14,
+            thumbnail: 'https://placehold.co/400x250/png?text=Script+Scraper+Data+Web',
+            alt: 'Thumbnail showing web scraping code and data extraction',
+          },
+          // APK Premium
+          {
+            id: 7,
+            category: 'apk',
+            name: 'APK Chat Premium',
+            description:
+              'Aplikasi chat premium dengan fitur enkripsi dan multi-platform support.',
+            price: 20,
+            thumbnail: 'https://placehold.co/400x250/png?text=APK+Chat+Premium',
+            alt: 'Thumbnail of a smartphone showing a premium chat app interface',
+          },
+          {
+            id: 8,
+            category: 'apk',
+            name: 'APK Fitness Tracker',
+            description:
+              'Aplikasi fitness tracker dengan fitur pelacakan aktivitas dan diet.',
+            price: 18,
+            thumbnail: 'https://placehold.co/400x250/png?text=APK+Fitness+Tracker',
+            alt: 'Thumbnail of a smartphone showing fitness tracking app dashboard',
+          },
+          {
+            id: 9,
+            category: 'apk',
+            name: 'APK Edukasi Anak',
+            description:
+              'Aplikasi edukasi interaktif untuk anak-anak dengan berbagai permainan edukatif.',
+            price: 15,
+            thumbnail: 'https://placehold.co/400x250/png?text=APK+Edukasi+Anak',
+            alt: 'Thumbnail of a smartphone showing educational app for children',
+          },
+          // Plugin
+          {
+            id: 10,
+            category: 'plugin',
+            name: 'Plugin SEO WordPress',
+            description:
+              'Plugin SEO untuk WordPress dengan fitur analisa dan optimasi otomatis.',
+            price: 9,
+            thumbnail: 'https://placehold.co/400x250/png?text=Plugin+SEO+WordPress',
+            alt: 'Thumbnail showing WordPress plugin interface for SEO optimization',
+          },
+          {
+            id: 11,
+            category: 'plugin',
+            name: 'Plugin Cache Website',
+            description:
+              'Plugin caching untuk mempercepat loading website dan meningkatkan performa.',
+            price: 11,
+            thumbnail: 'https://placehold.co/400x250/png?text=Plugin+Cache+Website',
+            alt: 'Thumbnail showing website speed optimization plugin interface',
+          },
+          {
+            id: 12,
+            category: 'plugin',
+            name: 'Plugin Form Kontak',
+            description:
+              'Plugin form kontak dengan fitur drag and drop dan integrasi email.',
+            price: 7,
+            thumbnail: 'https://placehold.co/400x250/png?text=Plugin+Form+Kontak',
+            alt: 'Thumbnail showing contact form plugin interface with drag and drop',
+          },
+          // Template
+          {
+            id: 13,
+            category: 'template',
+            name: 'Template Blog Minimalis',
+            description:
+              'Template blog dengan desain minimalis, responsif, dan mudah dikustomisasi.',
+            price: 6,
+            thumbnail: 'https://placehold.co/400x250/png?text=Template+Blog+Minimalis',
+            alt: 'Thumbnail of a minimalistic blog template with clean layout',
+          },
+          {
+            id: 14,
+            category: 'template',
+            name: 'Template Portfolio Kreatif',
+            description:
+              'Template portfolio untuk menampilkan karya kreatif dengan gaya modern.',
+            price: 8,
+            thumbnail: 'https://placehold.co/400x250/png?text=Template+Portfolio+Kreatif',
+            alt: 'Thumbnail of a creative portfolio template with image gallery',
+          },
+          {
+            id: 15,
+            category: 'template',
+            name: 'Template Landing Page',
+            description:
+              'Template landing page yang menarik dan konversi tinggi untuk produk Anda.',
+            price: 10,
+            thumbnail: 'https://placehold.co/400x250/png?text=Template+Landing+Page',
+            alt: 'Thumbnail of a landing page template with call to action buttons',
+          },
+          // Service
+          {
+            id: 16,
+            category: 'service',
+            name: 'Jasa Pembuatan Website',
+            description:
+              'Layanan pembuatan website custom sesuai kebutuhan bisnis Anda.',
+            price: 50,
+            thumbnail: 'https://placehold.co/400x250/png?text=Jasa+Pembuatan+Website',
+            alt: 'Thumbnail showing a web developer working on a website project',
+          },
+          {
+            id: 17,
+            category: 'service',
+            name: 'Jasa SEO Profesional',
+            description:
+              'Layanan optimasi SEO untuk meningkatkan peringkat website di mesin pencari.',
+            price: 40,
+            thumbnail: 'https://placehold.co/400x250/png?text=Jasa+SEO+Profesional',
+            alt: 'Thumbnail showing SEO analytics and charts on a computer screen',
+          },
+          {
+            id: 18,
+            category: 'service',
+            name: 'Jasa Maintenance Website',
+            description:
+              'Layanan maintenance dan update website agar tetap aman dan optimal.',
+            price: 30,
+            thumbnail: 'https://placehold.co/400x250/png?text=Jasa+Maintenance+Website',
+            alt: 'Thumbnail showing a technician maintaining a website on a laptop',
+          },
+          // Ebook
+          {
+            id: 19,
+            category: 'ebook',
+            name: 'Ebook Panduan SEO',
+            description:
+              'Ebook lengkap panduan SEO dari dasar hingga teknik lanjutan.',
+            price: 5,
+            thumbnail: 'https://placehold.co/400x250/png?text=Ebook+Panduan+SEO',
+            alt: 'Thumbnail of an ebook cover titled Panduan SEO with digital graphics',
+          },
+          {
+            id: 20,
+            category: 'ebook',
+            name: 'Ebook Bisnis Online',
+            description:
+              'Ebook strategi sukses bisnis online untuk pemula dan profesional.',
+            price: 7,
+            thumbnail: 'https://placehold.co/400x250/png?text=Ebook+Bisnis+Online',
+            alt: 'Thumbnail of an ebook cover titled Bisnis Online with business icons',
+          },
+          {
+            id: 21,
+            category: 'ebook',
+            name: 'Ebook Pemrograman Python',
+            description:
+              'Ebook belajar pemrograman Python dari dasar hingga proyek nyata.',
+            price: 8,
+            thumbnail: 'https://placehold.co/400x250/png?text=Ebook+Pemrograman+Python',
+            alt: 'Thumbnail of an ebook cover titled Pemrograman Python with code snippets',
+          },
+          // Course
+          {
+            id: 22,
+            category: 'course',
+            name: 'Course Web Development',
+            description:
+              'Course lengkap belajar web development dari HTML, CSS, hingga JavaScript.',
+            price: 25,
+            thumbnail: 'https://placehold.co/400x250/png?text=Course+Web+Development',
+            alt: 'Thumbnail showing a laptop with web development course content',
+          },
+          {
+            id: 23,
+            category: 'course',
+            name: 'Course Digital Marketing',
+            description:
+              'Course strategi digital marketing untuk meningkatkan penjualan online.',
+            price: 20,
+            thumbnail: 'https://placehold.co/400x250/png?text=Course+Digital+Marketing',
+            alt: 'Thumbnail showing marketing charts and digital marketing course',
+          },
+          {
+            id: 24,
+            category: 'course',
+            name: 'Course Python Programming',
+            description:
+              'Course belajar pemrograman Python dengan proyek aplikasi nyata.',
+            price: 22,
+            thumbnail: 'https://placehold.co/400x250/png?text=Course+Python+Programming',
+            alt: 'Thumbnail showing Python programming course with code editor',
+          },
+        ];
+
+        const selectedCategory = ref(null);
+        const selectedProduct = ref(null);
+
+        const buyerName = ref('');
+        const buyerEmail = ref('');
+        const isPaying = ref(false);
+
+        // Order state stored in localStorage
+        const order = reactive({
+          id: null,
+          productName: '',
+          price: 0,
+          status: '',
+          buyerName: '',
+          buyerEmail: '',
+          paypalOrderId: '',
+        });
+
+        // Filter products by selected category
+        const filteredProducts = computed(() => {
+          if (!selectedCategory.value) return [];
+          return products.filter(
+            (p) => p.category === selectedCategory.value
+          );
+        });
+
+        // Navigation
+        function goTo(page) {
+          currentPage.value = page;
+          if (page === 'dashboard') {
+            selectedCategory.value = null;
+            selectedProduct.value = null;
+          }
+          if (page === 'products' && !selectedCategory.value) {
+            selectedCategory.value = productCategories[0].key;
+          }
+          if (page === 'orderStatus') {
+            loadOrderFromStorage();
+          }
+        }
+
+        // Select category and go to products page
+        function selectCategory(key) {
+          selectedCategory.value = key;
+          selectedProduct.value = null;
+          currentPage.value = 'products';
+        }
+
+        // Select product and go to buy page
+        function selectProduct(product) {
+          selectedProduct.value = product;
+          buyerName.value = '';
+          buyerEmail.value = '';
+          currentPage.value = 'buyProduct';
+        }
+
+        // Load order from localStorage
+        function loadOrderFromStorage() {
+          const stored = localStorage.getItem('automationbot_order');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            order.id = parsed.id;
+            order.productName = parsed.productName;
+            order.price = parsed.price;
+            order.status = parsed.status;
+            order.buyerName = parsed.buyerName;
+            order.buyerEmail = parsed.buyerEmail;
+            order.paypalOrderId = parsed.paypalOrderId || '';
+          } else {
+            order.id = null;
+            order.productName = '';
+            order.price = 0;
+            order.status = '';
+            order.buyerName = '';
+            order.buyerEmail = '';
+            order.paypalOrderId = '';
+          }
+        }
+
+        // Save order to localStorage
+        function saveOrderToStorage() {
+          localStorage.setItem(
+            'automationbot_order',
+            JSON.stringify({
+              id: order.id,
+              productName: order.productName,
+              price: order.price,
+              status: order.status,
+              buyerName: order.buyerName,
+              buyerEmail: order.buyerEmail,
+              paypalOrderId: order.paypalOrderId,
+            })
+          );
+        }
+
+        // Generate random order ID
+        function generateOrderId() {
+          return Math.floor(100000 + Math.random() * 900000);
+        }
+
+        // Submit order and redirect to PayPal
+        async function submitOrder() {
+          if (!buyerName.value.trim() || !buyerEmail.value.trim()) {
+            alert('Mohon isi nama dan email dengan benar.');
+            return;
+          }
+          isPaying.value = true;
+
+          // Create order ID
+          order.id = generateOrderId();
+          order.productName = selectedProduct.value.name;
+          order.price = selectedProduct.value.price;
+          order.status = 'pending';
+          order.buyerName = buyerName.value.trim();
+          order.buyerEmail = buyerEmail.value.trim();
+          order.paypalOrderId = '';
+
+          saveOrderToStorage();
+
+          // Redirect to PayPal payment page
+          // Using PayPal Checkout URL with clientId and amount
+          // We'll use PayPal's "Buy Now" button link with amount and return URL
+
+          // Construct PayPal payment URL
+          // Using PayPal's "PayPal.Me" is not suitable for dynamic amounts, so we use PayPal Checkout link:
+          // We'll use PayPal's "checkout" with parameters:
+          // https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&item_name=ITEM_NAME&amount=AMOUNT&currency_code=USD&return=RETURN_URL&cancel_return=CANCEL_URL
+
+          // For sandbox/testing, you can use sandbox URLs, but here we use live URLs.
+
+          const businessEmail = 'dimzmang@gmail.com'; // Your PayPal business email
+          const itemName = encodeURIComponent(order.productName);
+          const amount = order.price.toFixed(2);
+          const returnUrl = encodeURIComponent(
+            window.location.origin + '/?orderid=' + order.id + '&status=success'
+          );
+          const cancelUrl = encodeURIComponent(
+            window.location.origin + '/?orderid=' + order.id + '&status=cancel'
+          );
+
+          // PayPal payment URL
+          const paypalUrl =
+            'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick' +
+            '&business=' +
+            businessEmail +
+            '&item_name=' +
+            itemName +
+            '&amount=' +
+            amount +
+            '&currency_code=USD' +
+            '&return=' +
+            returnUrl +
+            '&cancel_return=' +
+            cancelUrl;
+
+          // Save order with pending status before redirect
+          saveOrderToStorage();
+
+          // Redirect after short delay to show button disabled
+          setTimeout(() => {
+            window.location.href = paypalUrl;
+          }, 1000);
+        }
+
+        // Pay order again button handler
+        function payOrderAgain() {
+          if (!order.id || !order.productName || !order.price) {
+            alert('Tidak ada order yang dapat dibayar.');
+            return;
+          }
+          isPaying.value = true;
+
+          const businessEmail = 'dimzmang@gmail.com';
+          const itemName = encodeURIComponent(order.productName);
+          const amount = order.price.toFixed(2);
+          const returnUrl = encodeURIComponent(
+            window.location.origin + '/?orderid=' + order.id + '&status=success'
+          );
+          const cancelUrl = encodeURIComponent(
+            window.location.origin + '/?orderid=' + order.id + '&status=cancel'
+          );
+
+          const paypalUrl =
+            'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick' +
+            '&business=' +
+            businessEmail +
+            '&item_name=' +
+            itemName +
+            '&amount=' +
+            amount +
+            '&currency_code=USD' +
+            '&return=' +
+            returnUrl +
+            '&cancel_return=' +
+            cancelUrl;
+
+          setTimeout(() => {
+            window.location.href = paypalUrl;
+          }, 500);
+        }
+
+        // Check URL params for order status update after PayPal redirect
+        function checkOrderStatusFromUrl() {
+          const params = new URLSearchParams(window.location.search);
+          const orderIdParam = params.get('orderid');
+          const statusParam = params.get('status');
+
+          if (orderIdParam && statusParam) {
+            loadOrderFromStorage();
+            if (order.id && order.id.toString() === orderIdParam) {
+              if (statusParam === 'success') {
+                order.status = 'success';
+                saveOrderToStorage();
+                sendProductEmail();
+                currentPage.value = 'orderStatus';
+                alert('Pembayaran berhasil! Produk telah dikirim ke email Anda.');
+                // Clean URL params
+                window.history.replaceState({}, document.title, window.location.pathname);
+              } else if (statusParam === 'cancel') {
+                order.status = 'pending';
+                saveOrderToStorage();
+                currentPage.value = 'orderStatus';
+                alert('Pembayaran dibatalkan. Silakan coba lagi.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+              }
+            }
+          }
+        }
+
+        // Send product via email (simulate)
+        async function sendProductEmail() {
+          // Simulate sending email via external API or backend
+          // Since no backend here, we simulate with a fetch to a free email API or just console log
+
+          // Email content
+          const emailContent = `
+            Hi ${order.buyerName},
+
+            Berikut produk yang Anda beli:
+            Item: ${order.productName}
+            Link: https://automationbot.example.com/download/${encodeURIComponent(
+              order.productName.toLowerCase().replace(/\s+/g, '-')
+            )}
+
+            Terimakasih telah order di AutomationBot.
+
+            © AutomationBot - 2025
+          `;
+
+          // Simulate email sending delay
+          try {
+            // Here you would call your backend or email service API
+            // For demo, just log to console
+            console.log('Sending email to:', order.buyerEmail);
+            console.log('Email content:', emailContent);
+            // You can integrate with emailjs or other services if needed
+          } catch (e) {
+            console.error('Failed to send email:', e);
+          }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+          mobileMenuOpen.value = !mobileMenuOpen.value;
+        }
+
+        onMounted(() => {
+          startSlider();
+          checkOrderStatusFromUrl();
+          loadOrderFromStorage();
+        });
+
+        return {
+          currentPage,
+          mobileMenuOpen,
+          toggleMobileMenu,
+          slides,
+          sliderIndex,
+          productCategories,
+          selectedCategory,
+          selectCategory,
+          products,
+          filteredProducts,
+          selectedProduct,
+          selectProduct,
+          buyerName,
+          buyerEmail,
+          submitOrder,
+          isPaying,
+          order,
+          goTo,
+          payOrderAgain,
+        };
+      },
+    }).mount('#app');
+  </script>
+</body>
+</html>
