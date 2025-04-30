@@ -1,80 +1,77 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Script Order Automation</title>
+  <title>Checkout - Script Order Automation</title>
   <style>
     body {
-      background: linear-gradient(to right, #0ff0b3, #036ed9);
       font-family: 'Segoe UI', sans-serif;
-      color: white;
+      background: linear-gradient(to bottom right, #e0f7fa, #fff);
       text-align: center;
-      padding: 50px;
+      padding: 40px;
     }
-    .box {
-      background: rgba(255, 255, 255, 0.1);
+    .container {
+      background: #fff;
       padding: 30px;
-      border-radius: 15px;
       max-width: 400px;
       margin: auto;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
-    button {
-      padding: 10px 20px;
-      background: #00ffcc;
+    h1 {
+      color: #007BFF;
+    }
+    .btn {
+      background: #007BFF;
+      color: #fff;
+      padding: 12px 25px;
+      font-weight: bold;
       border: none;
       border-radius: 10px;
-      font-weight: bold;
       cursor: pointer;
-    }
-    button:hover {
-      background: #00e6b8;
-    }
-    img {
       margin-top: 20px;
-      width: 220px;
+    }
+    #qrcode {
+      margin-top: 20px;
+    }
+    .note {
+      font-size: 12px;
+      color: #555;
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Script Order Automation</h1>
-    <p>Harga: Rp 15.000</p>
-    <button onclick="buatPembayaran()">Beli Sekarang</button>
-    <div id="qris-area"></div>
-  </div>
 
-  <script>
-    async function buatPembayaran() {
-      document.getElementById("qris-area").innerHTML = "Generating QR...";
-      const url = `https://api.simplebot.my.id/orderkuota/createpayment?apikey=145461917383966842162877OKCTA93AACD2638878D4A395F7E91C2C7040&amount=15000&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214510458376546110303UMI51440014ID.CO.QRIS.WWW0215ID20253689646510303UMI5204541153033605802ID5920GENEXSTORE+OK21628776015PESISIR+SELATAN61052565162070703A016304DB37`;
-      const res = await fetch(url);
-      const data = await res.json();
+<div class="container">
+  <h1>Script Order Automation</h1>
+  <p>Total: <strong>Rp 5.000</strong></p>
+  <button class="btn" onclick="generateQR()">Bayar via QRIS</button>
+  
+  <div id="qrcode"></div>
+  <p class="note" id="note"></p>
+</div>
 
-      if (data.status) {
-        const invoice = data.data.invoice_id;
-        document.getElementById("qris-area").innerHTML = `
-          <img src="${data.data.qr_image}" alt="QRIS">
-          <p>Scan QRIS untuk membayar</p>
-        `;
-        cekStatus(invoice);
-      } else {
-        document.getElementById("qris-area").innerHTML = "Gagal generate QR: " + data.error;
-      }
-    }
+<script>
+async function generateQR() {
+  const apikey = "145461917383966842162877OKCTA93AACD2638878D4A395F7E91C2C7040";
+  const amount = 5000;
+  const codeqr = encodeURIComponent("00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214510458376546110303UMI51440014ID.CO.QRIS.WWW0215ID20253689646510303UMI5204541153033605802ID5920GENEXSTORE OK21628776015PESISIR SELATAN61052565162070703A016304DB37");
 
-    async function cekStatus(invoiceId) {
-      const url = `https://api.simplebot.my.id/orderkuota/cekstatus?apikey=145461917383966842162877OKCTA93AACD2638878D4A395F7E91C2C7040&merchant=OK2162877&keyorkut=020609&invoice_id=${invoiceId}`;
-      const res = await fetch(url);
-      const data = await res.json();
+  const url = `https://api.simplebot.my.id/orderkuota/createpayment?apikey=${apikey}&amount=${amount}&codeqr=${codeqr}`;
 
-      if (data.status) {
-        document.getElementById("qris-area").innerHTML = "<b>Pembayaran berhasil!</b><br>Produk akan segera dikirim.";
-        // Di sini bisa trigger kirim email, kirim WA, atau tampilkan link download
-      } else {
-        setTimeout(() => cekStatus(invoiceId), 7000); // cek ulang setiap 7 detik
-      }
-    }
-  </script>
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (data.status) {
+    document.getElementById("qrcode").innerHTML = `<img src="${data.qr_link}" alt="QRIS QR" width="300">`;
+    document.getElementById("note").innerText = "Scan QR di atas menggunakan aplikasi e-wallet kamu.";
+  } else {
+    document.getElementById("qrcode").innerHTML = "";
+    document.getElementById("note").innerText = "Gagal generate QR: " + data.error;
+  }
+}
+</script>
+
 </body>
 </html>
