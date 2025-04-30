@@ -1,199 +1,80 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PANELBOTKU - Store Panel Bot WhatsApp & Hosting</title>
-
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="PanelBotKu adalah tempat jualan panel bot WhatsApp, reseller hosting, dan layanan lainnya. Fast setup, harga terjangkau, support 24 jam.">
-  <meta name="keywords" content="panelbotku, jual panel, bot WhatsApp, panel hosting murah, reseller bot, panel pterodactyl, panel bot termurah">
-  <meta name="robots" content="index, follow">
-  <meta name="author" content="PanelBotKu">
-
-  <!-- Open Graph (biar keren di share WhatsApp/FB) -->
-  <meta property="og:title" content="PanelBotKu - Store Panel Bot & Hosting Murah">
-  <meta property="og:description" content="Tempat jual panel bot WhatsApp, hosting, dan reseller panel dengan harga termurah dan terpercaya!!">
-  <meta property="og:url" content="http://panelbotku.my.id">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://files.catbox.moe/ntxx5o.png" />
-
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap" rel="stylesheet"/>
-
-  <!-- Styles -->
+  <meta charset="UTF-8">
+  <title>Script Order Automation</title>
   <style>
-    /* (semua style kamu yang tadi tetap sama di sini) */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0d1117, #0a0f1c);
-      color: #b0d7ff;
-      padding: 0;
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      background: rgba(13, 17, 23, 0.8);
-      backdrop-filter: blur(8px);
-      padding: 1rem;
+      background: linear-gradient(to right, #0ff0b3, #036ed9);
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
       text-align: center;
-      font-size: 2rem;
-      font-weight: bold;
-      z-index: 1000;
+      padding: 50px;
     }
-
-    main {
-      padding: 2rem;
-    }
-
-    .desc {
-      text-align: center;
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.05);
+    .box {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
       border-radius: 15px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
-
-    .card h2 {
-      margin-bottom: 0.5rem;
-      color: #4db8ff;
-    }
-
-    .card p {
-      margin-bottom: 1rem;
-    }
-
-    .card a {
-      text-decoration: none;
-      color: #4db8ff;
+    button {
+      padding: 10px 20px;
+      background: #00ffcc;
+      border: none;
+      border-radius: 10px;
       font-weight: bold;
+      cursor: pointer;
     }
-
-    .separator {
-      text-align: center;
-      margin: 3rem 0 1rem;
-      color: #555;
+    button:hover {
+      background: #00e6b8;
     }
-    
-    .robot-chat {
-  position: fixed;
-  bottom: 130px;
-  right: 10px;
-  width: 200px;
-  height: 60px;
-  z-index: 999;
-  animation: floaty 2s ease-in-out infinite;
-}
-
-.robot-chat img {
-  width: 100%;
-  height: auto;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.robot-chat img:hover {
-  transform: scale(1.1);
-}
-
-@keyframes floaty {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-    .reason {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 15px;
-      padding: 1.5rem;
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    footer {
-      text-align: center;
-      padding: 1rem;
-      background: #0a0f1c;
-      font-size: 0.9rem;
-      color: #888;
-    }
-
-    footer a {
-      color: #4db8ff;
-      text-decoration: none;
+    img {
+      margin-top: 20px;
+      width: 220px;
     }
   </style>
 </head>
 <body>
+  <div class="box">
+    <h1>Script Order Automation</h1>
+    <p>Harga: Rp 15.000</p>
+    <button onclick="buatPembayaran()">Beli Sekarang</button>
+    <div id="qris-area"></div>
+  </div>
 
-  <header>⭐ PANELBOTKU ⭐</header>
+  <script>
+    async function buatPembayaran() {
+      document.getElementById("qris-area").innerHTML = "Generating QR...";
+      const url = `https://api.simplebot.my.id/orderkuota/createpayment?apikey=145461917383966842162877OKCTA93AACD2638878D4A395F7E91C2C7040&amount=15000&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214510458376546110303UMI51440014ID.CO.QRIS.WWW0215ID20253689646510303UMI5204541153033605802ID5920GENEXSTORE+OK21628776015PESISIR+SELATAN61052565162070703A016304DB37`;
+      const res = await fetch(url);
+      const data = await res.json();
 
-  <main>
-    <div class="desc">
-      Solusi Cepat Kebutuhan Hosting Mu
-    </div>
+      if (data.status) {
+        const invoice = data.data.invoice_id;
+        document.getElementById("qris-area").innerHTML = `
+          <img src="${data.data.qr_image}" alt="QRIS">
+          <p>Scan QRIS untuk membayar</p>
+        `;
+        cekStatus(invoice);
+      } else {
+        document.getElementById("qris-area").innerHTML = "Gagal generate QR: " + data.error;
+      }
+    }
 
-    <div class="card">
-      <h2>Panel Pterodactyl</h2>
-      <p>Panel Pterodactyl sering digunakan sebagai alat untuk menjalankan bot, seperti WhatsApp, telegram, dll</p>
-      <a href="https://wa.me/6289602541152">Beli Sekarang →</a>
-    </div>
+    async function cekStatus(invoiceId) {
+      const url = `https://api.simplebot.my.id/orderkuota/cekstatus?apikey=145461917383966842162877OKCTA93AACD2638878D4A395F7E91C2C7040&merchant=OK2162877&keyorkut=020609&invoice_id=${invoiceId}`;
+      const res = await fetch(url);
+      const data = await res.json();
 
-    <div class="card">
-      <h2>Admin Panel</h2>
-      <p>Akses penuh dan fitur lengkap untuk reseller.</p>
-      <a href="https://wa.me/6289602541152">Beli Sekarang →</a>
-    </div>
-
-    <div class="card">
-      <h2>Vps ( Virtual Private Server )</h2>
-      <p>Vps ( virtual private server ) sering digunakan untuk berbagai kebutuhan seperti untuk server, website, dll</p>
-      <a href="https://wa.me/6289602541152">Beli Sekarang →</a>
-    </div>
-    
-    <div class="card">
-      <h2>Reseller Subdomain</h2>
-      <p>Coming Soon</p>
-    </div>
-
-    <div class="separator">───────────────────────────────────</div>
-<div class="reason">
-  <h2>Kenapa harus pilih PANELBOTKU?</h2>
-  <p>
-    Karena kami bukan sekadar penyedia panel biasa. PANELBOTKU hadir untuk kamu yang butuh solusi cepat, harga terjangkau, dan kualitas terbaik. Kami paham betul pentingnya uptime, support responsif, dan fleksibilitas untuk para developer, reseller, maupun user pemula.
-  </p>
-  
-  <p>
-    Dengan infrastruktur yang stabil dan tim support yang siap membantu 24/7 via WhatsApp, kamu gak perlu khawatir soal error, setup rumit, atau kebingungan teknis. Panel kami sudah dioptimalkan untuk performa tinggi dan mudah digunakan.
-  </p>
-  
-  <p>
-    Selain itu, kami juga menyediakan berbagai layanan seperti nomor kosong (nokos) untuk verifikasi akun, hingga akses admin dan panel reseller yang powerful. Semuanya lengkap dalam satu tempat. Yuk, gabung bersama ratusan pengguna lain yang sudah percaya PANELBOTKU!
-  </p>
-</div>
-  </main>
-
-  <footer>
-    &copy; 2025 PANELBOTKU. All rights reserved. | Kontak: <a href="mailto:dimzmang@gmail.com">EMAIL</a>
-  </footer>
-<a href="https://wa.me/6289602541152" class="robot-chat" target="_blank">
-  <img src="https://files.catbox.moe/ntxx5o.png" alt="PBKU" />
-</a>
+      if (data.status) {
+        document.getElementById("qris-area").innerHTML = "<b>Pembayaran berhasil!</b><br>Produk akan segera dikirim.";
+        // Di sini bisa trigger kirim email, kirim WA, atau tampilkan link download
+      } else {
+        setTimeout(() => cekStatus(invoiceId), 7000); // cek ulang setiap 7 detik
+      }
+    }
+  </script>
 </body>
 </html>
